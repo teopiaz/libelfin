@@ -419,6 +419,12 @@ public:
         bool operator==(const die &o) const;
         bool operator!=(const die &o) const;
 
+        /**
+         * Return true if the given section offset is contained within
+         * this DIE
+         */
+        bool contains_section_offset(section_offset off) const;
+
 private:
         friend class unit;
         friend class type_unit;

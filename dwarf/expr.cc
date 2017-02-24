@@ -128,8 +128,30 @@ expr::evaluate(expr_context *ctx, const std::initializer_list<taddr> &arguments)
 
                         // 2.5.1.2 Register based addressing
                 case DW_OP::fbreg:
-                        // XXX
-                        throw runtime_error("DW_OP_fbreg not implemented");
+                {
+                    for (const auto& die : cu->root()) {
+                        bool found = false;
+                        if (die.contains_section_offset(offset)) {
+                                auto expr = die[DW_AT::frame_base].as_exprloc();
+                                auto frame_base = expr.evaluate(ctx);
+                                switch (frame_base.location_type) {
+                                case expr_result::type::reg:
+                                    tmp1.u = (unsigned)frame_base.value;
+                                    tmp2.s = cur.sleb128();
+                                    stack.push_back((int64_t)ctx->reg(tmp1.u) + tmp2.s);
+                                    found = true;
+                                    break;
+                                case expr_result::type::address:
+                                case expr_result::type::literal:
+                                case expr_result::type::implicit:
+                                case expr_result::type::empty:                                    
+                                    throw expr_error("Unhandled frame base type for DW_OP_fbreg");
+                                }
+                            }
+                        if (found) break;
+                     }
+                     break;
+                }
                 case DW_OP::breg0...DW_OP::breg31:
                         tmp1.u = (unsigned)op - (unsigned)DW_OP::breg0;
                         tmp2.s = cur.sleb128();
