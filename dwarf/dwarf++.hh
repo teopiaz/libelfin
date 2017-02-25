@@ -32,6 +32,7 @@ class value;
 class expr;
 class expr_context;
 class expr_result;
+class loclist;
 class rangelist;
 class line_table;
 
@@ -666,7 +667,9 @@ public:
          */
         bool as_flag() const;
 
-        // XXX loclistptr, macptr
+        // XXX macptr
+
+        loclist as_loclist() const;
 
         /**
          * Return this value as a rangelist.
@@ -828,6 +831,14 @@ public:
         {
                 throw expr_error("DW_OP_form_tls_address operations not supported");
         }
+
+        /**
+         * Implement DW_OP_form_tls_address.
+         */
+        virtual taddr pc()
+        {
+                throw expr_error("loclist operations not supported");
+        }
 };
 
 /**
@@ -902,6 +913,32 @@ public:
 
 std::string
 to_string(expr_result::type v);
+
+class loclist
+{
+public:
+        /**
+         * Return the result of evaluating this expression using the
+         * specified expression context.  The expression stack will be
+         * initialized with the given arguments such that the first
+         * arguments is at the top of the stack and the last argument
+         * at the bottom of the stack.
+         *
+         * Throws expr_error if there is an error evaluating the
+         * expression (such as an unknown operation, stack underflow,
+         * bounds error, etc.)
+         */
+        expr_result evaluate(expr_context *ctx) const;
+
+private:
+        loclist(const unit *cu,
+                section_offset offset);
+
+        friend class value;
+
+        const unit *cu;
+        section_offset offset;
+};
 
 //////////////////////////////////////////////////////////////////
 // Range lists
