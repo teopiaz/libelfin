@@ -167,7 +167,7 @@ at_data_member_location(const die &d, expr_context *ctx, taddr base, taddr pc)
         switch (v.get_type()) {
         case value::type::constant:
         case value::type::uconstant:
-                return {expr_result::type::address, base + v.as_uconstant()};
+                return {expr_result::type::address, base + v.as_uconstant(), nullptr, 0};
         case value::type::exprloc:
                 return v.as_exprloc().evaluate(ctx, base);
         case value::type::loclist:
